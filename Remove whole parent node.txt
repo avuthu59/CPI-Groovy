@@ -1,0 +1,35 @@
+import groovy.util.XmlParser
+import groovy.xml.StreamingMarkupBuilder
+import groovy.xml.XmlUtil
+import com.sap.gateway.ip.core.customdev.util.Message;
+import java.util.HashMap;
+
+def Message processData(Message message) {
+    //Body
+    def body = message.getBody(java.lang.String);
+    
+    def properties = message.getProperties();
+    emailValue = properties.get("email");
+    emailSize = properties.get("email_size");
+    
+    def list = new XmlParser().parseText(body);  
+    
+    list.CompoundEmployee.each
+    { 
+        it.person.each
+        {
+          if(it.employment_information[0].custom_string6.text().toLowerCase() =="yesno_yes")
+          {
+              //do nothing
+          }
+          else
+          {
+              it.parent().remove(it);
+          }
+        }
+    }
+    message.setBody(XmlUtil.serialize(list))
+
+
+    return message;
+}
